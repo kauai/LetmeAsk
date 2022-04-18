@@ -1,4 +1,5 @@
 import { useState,FormEvent, useEffect } from 'react';
+import deleteImg from '../assets/images/delete.svg';
 import { useParams } from 'react-router-dom';
 import { database } from '../services/Firebase';
 import logoImg from '../assets/images/logo.svg';
@@ -50,6 +51,11 @@ export function AdminRoom() {
         setNewQuestion('');
     }
 
+    async function handleDeleteQuestion(questionId: string) {
+        window.confirm('Are you sure you want to delete this question?')
+        && await database.ref(`rooms/${roomId}/questions/${questionId}`).remove();
+    }
+
     return (
        <div id="page-room">
            <header>
@@ -69,7 +75,13 @@ export function AdminRoom() {
                </div>
 
                <div className="question-list">
-                { questions.map((item) => <Question key={item.id}  {...item}/>)}
+                { questions.map((item) => {
+                    return <Question key={item.id}  {...item}>
+                        <button type="button" onClick={() => handleDeleteQuestion(item.id)}>
+                            <img src={deleteImg} alt="Deletar pergunta" />
+                        </button>
+                    </Question>
+                })}
                </div>
            </main>
        </div>
