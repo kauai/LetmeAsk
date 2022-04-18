@@ -1,6 +1,6 @@
 import { useState,FormEvent, useEffect } from 'react';
 import deleteImg from '../assets/images/delete.svg';
-import { useParams } from 'react-router-dom';
+import { useParams,useNavigate } from 'react-router-dom';
 import { database } from '../services/Firebase';
 import logoImg from '../assets/images/logo.svg';
 import { Button } from '../components/Button';
@@ -18,7 +18,8 @@ type RoomParams = {
 
 export function AdminRoom() {
     const { user } = useAuth();
-    console.log('USER',user)
+    let navigate = useNavigate();
+
     const params = useParams<RoomParams>()
     const [ newQuestion, setNewQuestion ] = useState('')
     const roomId = params.id;
@@ -51,6 +52,14 @@ export function AdminRoom() {
         setNewQuestion('');
     }
 
+    async function handleEndRoom() { 
+        await database.ref(`rooms/${roomId}`).update({ 
+            endedAt: new Date(),
+        })
+
+        navigate('/')
+    }
+
     async function handleDeleteQuestion(questionId: string) {
         window.confirm('Are you sure you want to delete this question?')
         && await database.ref(`rooms/${roomId}/questions/${questionId}`).remove();
@@ -63,7 +72,7 @@ export function AdminRoom() {
                         <img src={logoImg} alt="logo app"/>
                         <div>
                             <RoomCode code={`${roomId}`}/>
-                            <Button isOutlined>Encerrar sala</Button>
+                            <Button onClick={handleEndRoom} isOutlined>Encerrar sala</Button>
                         </div>
                 </div>
             </header>
