@@ -1,7 +1,11 @@
+import { FormEvent,useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import illusttrationImg from '../assets/images/illustration.svg'
 import logoImg from '../assets/images/logo.svg'
 import googleIcon from '../assets/images/google-icon.svg'
+
+import { database } from '../services/Firebase';
+
 import { Button } from '../components/Button';
 import { useAuth } from '../Hooks/UseAuth';
 import '../styles/auth.scss';
@@ -9,12 +13,29 @@ import '../styles/auth.scss';
 export function Home() {
     let navigate = useNavigate();
     const { user, signingWithGoogle } = useAuth();
+    const [ roomCode, setRoomCode ] = useState('');
 
     async function handleCreateRoom() {
         if(!user) {
             await signingWithGoogle();
         }
         navigate("/room/new");
+    }
+
+    async function handleJoinRoom(e:FormEvent) {
+        e.preventDefault();
+
+        console.log(roomCode)
+        if(roomCode.trim() === "") {
+            return;
+        }
+        const roomRef = await database.ref(`rooms/${roomCode}`).get()
+        if(!roomRef.exists()){
+            alert('Room does not exist');
+            return;
+        }
+
+        navigate("/room/"+roomCode);
     }
 
     return (
@@ -33,8 +54,10 @@ export function Home() {
                     </button>
                     <div className="separator">Ou entre em uma sala</div>
 
-                    <form>
+                    <form onSubmit={handleJoinRoom}>
                         <input 
+                            onChange={e => setRoomCode(e.target.value)}
+                            value={roomCode}
                             type="text"
                             placeholder="Digite o codigo da sala" 
                         />
